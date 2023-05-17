@@ -8,6 +8,7 @@
   <artifactId>rlo_12</artifactId>
   <version>${revision}${sha1}${changelist}</version>
   <name>rlo_12</name>
+  <url>https://teragrep.com</url>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <java.version>1.8</java.version>
@@ -29,6 +30,11 @@
       <organizationUrl>https://teragrep.com</organizationUrl>
     </developer>
   </developers>
+  <scm>
+    <connection>scm:git:https://github.com/teragrep/rlo_12.git</connection>
+    <developerConnection>scm:git:git@github.com:teragrep/rlo_12.git</developerConnection>
+    <url>https://github.com/teragrep/rlo_12/tree/master</url>
+  </scm>
   <dependencies>
     <!-- logging -->
     <dependency>
@@ -160,12 +166,41 @@
             <exclude>astyle-options.ini</exclude>
           </excludes>
         </configuration>
-      </plugin>      
+      </plugin>
+            <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <version>2.2.1</version>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <goals>
+              <goal>jar-no-fork</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>2.9.1</version>
+        <executions>
+          <execution>
+            <id>attach-javadocs</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+            <configuration>
+              <source>8</source>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
   <profiles>
     <profile>
-      <id>publish-maven-central</id>      
+      <id>publish-maven-central</id>
       <build>
         <plugins>
           <plugin>
@@ -203,7 +238,7 @@
       </distributionManagement>
     </profile>
     <profile>
-      <id>publish-github-packages</id>      
+      <id>publish-github-packages</id>
       <build>
         <plugins>
           <plugin>
