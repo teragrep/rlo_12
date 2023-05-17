@@ -37,9 +37,9 @@ import static java.nio.file.StandardWatchEventKinds.*;
  * String directory = "/path/to/dir"
  * boolean recurse = true;
  * filePattern = "^foo-(.*)$";
- * -> /path/to/dir subscribe
- * -> /path/to/dir/foo/fii/faa subscribe as well (any dir under /path/to/dir
- * -> match any file under /path/to/dir or it's sub-directories for pattern
+ * -&gt; /path/to/dir subscribe
+ * -&gt; /path/to/dir/foo/fii/faa subscribe as well (any dir under /path/to/dir
+ * -&gt; match any file under /path/to/dir or it's sub-directories for pattern
  */
 public class DirectoryEventWatcher {
     private static final Logger LOGGER = LoggerFactory.getLogger(DirectoryEventWatcher.class);
@@ -148,7 +148,8 @@ public class DirectoryEventWatcher {
      * NOTE multiple threads on poll need multiple directories watched because
      * of the one key per dir fact
      *
-     * @throws IOException
+     * @throws IOException Directory walking failed
+     * @throws InterruptedException Directory polling was interrupted
      */
     public void watch() throws IOException, InterruptedException {
         while (true) {
