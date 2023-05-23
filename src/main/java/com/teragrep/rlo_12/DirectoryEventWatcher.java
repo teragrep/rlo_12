@@ -212,7 +212,12 @@ public class DirectoryEventWatcher {
                 WatchEvent<Path> ev = (WatchEvent<Path>) event;
                 Path filename = ev.context();
 
-                LOGGER.trace("ev <" + kind + "> on <[" + directory.resolve(filename) + "]>");
+                if(LOGGER.isTraceEnabled()) {
+                    LOGGER.trace(
+                            "ev <{}> on <[{}]>",
+                            kind,
+                            directory.resolve(filename));
+                }
 
                 if (kind == ENTRY_DELETE) {
                     // remove file from known files set
@@ -251,23 +256,23 @@ public class DirectoryEventWatcher {
 
         @Override
         public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) throws IOException {
-            LOGGER.trace("visitFile <[" + path + "]>");
+            LOGGER.trace("visitFile <[{}]>", path);
 
             if (path.toFile().isDirectory()) {
                 if (path.toAbsolutePath().equals(initialDirectory) || recursive) {
                     if (!path.toFile().canRead()) {
                         // non-readables are skipped
-                        LOGGER.warn("Directory <[" + path.toAbsolutePath() + "]> is not readable, skipping.");
+                        LOGGER.warn("Directory <[{}]> is not readable, skipping.", path.toAbsolutePath());
                         return FileVisitResult.SKIP_SUBTREE;
                     }
                     register(path);
                 } else {
-                    LOGGER.trace("Path skipped <[" + path.toAbsolutePath() + "]> due to non-recursive processing");
+                    LOGGER.trace("Path skipped <[{}]> due to non-recursive processing", path.toAbsolutePath());
 
                 }
             } else if (path.toFile().isFile()) {
                 if (filePatternMatcher.reset(path.getFileName().toString()).matches()) {
-                    LOGGER.trace("visitFile filePatternMatcher matches <[" + path + "]> adding!");
+                    LOGGER.trace("visitFile filePatternMatcher matches <[{}]> adding!", path);
                     try {
                         transferQueue.transfer(new MonitoredFile(path.toAbsolutePath(), MonitoredFile.Status.FILE_MODIFIED));
 
@@ -286,15 +291,15 @@ public class DirectoryEventWatcher {
 
         @Override
         public FileVisitResult visitFileFailed(Path path, IOException exc) {
-            LOGGER.warn("visitFileFailed <[" + path + "]> is not accessible, skipping due to: " + exc);
+            LOGGER.warn("visitFileFailed <[{}]> is not accessible, skipping due to:", path, exc);
             return FileVisitResult.CONTINUE;
         }
 
         @Override
         public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-            LOGGER.trace("postVisitDirectory <[" + dir + "]>");
+            LOGGER.trace("postVisitDirectory <[{}]>", dir);
             if (exc != null) {
-                LOGGER.warn("Directory <[" + dir + "]> caused: " + exc);
+                LOGGER.warn("Directory <[{}]> caused:", dir, exc);
                 return FileVisitResult.SKIP_SUBTREE;
             } else {
                 return FileVisitResult.CONTINUE;
@@ -303,16 +308,16 @@ public class DirectoryEventWatcher {
 
         @Override
         public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-            LOGGER.trace("preVisitDirectory <[" + dir.toAbsolutePath() + "]>");
+            LOGGER.trace("preVisitDirectory <[{}]>", dir.toAbsolutePath());
             if (dir.toAbsolutePath().equals(initialDirectory) || recursive) {
                 if (!dir.toFile().canRead()) {
                     // non-readables are skipped
-                    LOGGER.warn("Directory <[" + dir.toAbsolutePath() + "]> is not readable, skipping.");
+                    LOGGER.warn("Directory <[{}]> is not readable, skipping.", dir.toAbsolutePath());
                     return FileVisitResult.SKIP_SUBTREE;
                 }
                 register(dir.toAbsolutePath());
             } else {
-                LOGGER.trace("Directory skipped <[" + dir.toAbsolutePath() + "]> due to non-recursive processing");
+                LOGGER.trace("Directory skipped <[{}]> due to non-recursive processing", dir.toAbsolutePath());
             }
             return FileVisitResult.CONTINUE;
         }
@@ -320,7 +325,7 @@ public class DirectoryEventWatcher {
 
     private void register(Path directory) throws IOException {
         Path absolutePath = directory.toAbsolutePath();
-        LOGGER.trace("register <[" + directory + "]> resolved to <[" + absolutePath + "]>");
+        LOGGER.trace("register <[{}]> resolved to <[{}]>", directory, absolutePath);
 
         // FIXME select proper watcher
         WatchKey key = absolutePath.register(directoryWatcher,
@@ -339,7 +344,7 @@ public class DirectoryEventWatcher {
         New directory found, processing it
          */
         if (!watchKeyPathMap.containsKey(key)) {
-            LOGGER.trace("found unregistered directory <[" + directory + "]>");
+            LOGGER.trace("found unregistered directory <[{}]>", directory);
             watchKeyPathMap.put(key, directory);
 
             Files.walkFileTree(
