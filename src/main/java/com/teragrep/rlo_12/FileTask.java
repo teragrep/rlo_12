@@ -53,8 +53,13 @@ class FileTask implements Runnable {
 
     @Override
     public void run() {
-        LOGGER.trace("FileTask on path <[" + monitoredFile.getPath() + "]> for <" + monitoredFile.getStatus() + ">");
-
+        if(LOGGER.isTraceEnabled()) {
+            LOGGER.trace(
+                    "FileTask on path <[{}]> for <{}>",
+                    monitoredFile.getPath(),
+                    monitoredFile.getStatus()
+            );
+        }
         readConsumer.accept(monitoredFile);
 
         MonitoredFile result;
@@ -73,7 +78,13 @@ class FileTask implements Runnable {
         }
         try {
             resultQueue.transfer(result);
-            LOGGER.trace("Successfully processed <[" + result.getPath() + "]> returned with status <"+result.getStatus()+">");
+            if(LOGGER.isTraceEnabled()) {
+                LOGGER.trace(
+                        "Successfully processed <[{}]> returned with status <{}>",
+                        result.getPath(),
+                        result.getStatus()
+                );
+            }
         } catch (InterruptedException e) {
             // if service is shutdown, it's ok to discard this?
             throw new RuntimeException(e);
