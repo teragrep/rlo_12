@@ -65,7 +65,12 @@ class FileStatusManager implements Runnable {
                         // read it
                         pathCurrentStateMap.put(changedFile.getPath(), MonitoredFile.Status.MODIFIED_SYNCHRONIZING);
                         if(LOGGER.isTraceEnabled()) {
-                            LOGGER.trace("Path <[" + changedFile.getPath() + "]> state changed from <NONE> to <" + MonitoredFile.Status.MODIFIED_SYNCHRONIZING + "> because <" + changedFile.getStatus() + ">");
+                            LOGGER.trace(
+                                    "Path <[{}]> state changed from <NONE> to <{}> because <{}>",
+                                    changedFile.getPath(),
+                                    MonitoredFile.Status.MODIFIED_SYNCHRONIZING,
+                                    changedFile.getStatus()
+                            );
                         }
                         threadPoolExecutor.execute(new FileTask(transferQueue, new MonitoredFile(changedFile.getPath(), MonitoredFile.Status.SYNC_NEW), consumerSupplier.get()));
                         continue;
@@ -79,7 +84,13 @@ class FileStatusManager implements Runnable {
                                 case MODIFIED_SYNCHRONIZED:
                                     pathCurrentStateMap.put(changedFile.getPath(), MonitoredFile.Status.MODIFIED_SYNCHRONIZING);
                                     if(LOGGER.isTraceEnabled()) {
-                                        LOGGER.trace("Path <[" + changedFile.getPath() + "]> state changed from <" + currentState + "> to <" + MonitoredFile.Status.MODIFIED_SYNCHRONIZING + "> because <" + changedFile.getStatus() + ">");
+                                        LOGGER.trace(
+                                                "Path <[{}]> state changed from <{}> to <{}> because <{}>",
+                                                changedFile.getPath(),
+                                                currentState,
+                                                MonitoredFile.Status.MODIFIED_SYNCHRONIZING,
+                                                changedFile.getStatus()
+                                        );
                                     }
                                     threadPoolExecutor.execute(new FileTask(transferQueue, new MonitoredFile(changedFile.getPath(), MonitoredFile.Status.SYNC_MODIFIED), consumerSupplier.get()));
                                     break;
@@ -87,21 +98,38 @@ class FileStatusManager implements Runnable {
                                     // still being read, not resubmitting, but indicating here that it needs to be re-read once reading completes
                                     pathCurrentStateMap.put(changedFile.getPath(), MonitoredFile.Status.SYNC_MODIFIED);
                                     if(LOGGER.isTraceEnabled()) {
-                                        LOGGER.trace("Path <[" + changedFile.getPath() + "]> state changed from <" + currentState + "> to <" + MonitoredFile.Status.SYNC_MODIFIED + "> because <" + changedFile.getStatus() + "> (modified while reading)");
+                                        LOGGER.trace(
+                                                "Path <[{}]> state changed from <{}> to <{}> because <{}> (modified while reading)",
+                                                changedFile.getPath(),
+                                                currentState,
+                                                MonitoredFile.Status.SYNC_MODIFIED,
+                                                changedFile.getStatus()
+                                        );
                                     }
                                     break;
                                 case SYNC_DELETED:
                                 case DELETE_SYNCHRONIZING:
                                     pathCurrentStateMap.put(changedFile.getPath(), MonitoredFile.Status.SYNC_RECREATED);
                                     if(LOGGER.isTraceEnabled()) {
-                                        LOGGER.trace("Path <[" + changedFile.getPath() + "]> state changed from <" + currentState + "> to <" + MonitoredFile.Status.SYNC_RECREATED + "> because <" + changedFile.getStatus() + ">");
+                                        LOGGER.trace(
+                                                "Path <[{}]> state changed from <{}> to <{}> because <{}>",
+                                                changedFile.getPath(),
+                                                currentState,
+                                                MonitoredFile.Status.SYNC_RECREATED,
+                                                changedFile.getStatus()
+                                        );
                                     }
                                     break;
                                 case SYNC_MODIFIED:
                                 case SYNC_RECREATED:
                                     // no-op
                                     if(LOGGER.isTraceEnabled()) {
-                                        LOGGER.trace("Path <[" + changedFile.getPath() + "]> state not changed from <" + currentState + "> because <" + changedFile.getStatus() + ">");
+                                        LOGGER.trace(
+                                                "Path <[{}]> state not changed from <{}> because <{}>",
+                                                changedFile.getPath(),
+                                                currentState,
+                                                changedFile.getStatus()
+                                        );
                                     }
                                     break;
                                 case FILE_DELETED:
@@ -116,7 +144,13 @@ class FileStatusManager implements Runnable {
                                 case MODIFIED_SYNCHRONIZED:
                                     // removed when everything (to our understanding) was read
                                     if(LOGGER.isTraceEnabled()) {
-                                        LOGGER.trace("Path <[" + changedFile.getPath() + "]> state changed from <" + currentState + "> to <" + MonitoredFile.Status.DELETE_SYNCHRONIZING + "> because <" + changedFile.getStatus() + ">");
+                                        LOGGER.trace(
+                                                "Path <[{}]> state changed from <{}> to <{}> because <{}>",
+                                                changedFile.getPath(),
+                                                currentState,
+                                                MonitoredFile.Status.DELETE_SYNCHRONIZING,
+                                                changedFile.getStatus()
+                                        );
                                     }
                                     pathCurrentStateMap.put(changedFile.getPath(), MonitoredFile.Status.DELETE_SYNCHRONIZING);
                                     threadPoolExecutor.execute(new FileTask(transferQueue, new MonitoredFile(changedFile.getPath(), MonitoredFile.Status.SYNC_DELETED), consumerSupplier.get()));
@@ -126,7 +160,13 @@ class FileStatusManager implements Runnable {
                                 case MODIFIED_SYNCHRONIZING:
                                     // task is already on this, indicate that it was removed
                                     if(LOGGER.isTraceEnabled()) {
-                                        LOGGER.trace("Path <[" + changedFile.getPath() + "]> state changed from <" + currentState + "> to <" + MonitoredFile.Status.SYNC_DELETED + "> because <" + changedFile.getStatus() + ">");
+                                        LOGGER.trace(
+                                                "Path <[{}]> state changed from <{}> to <{}> because <{}>",
+                                                changedFile.getPath(),
+                                                currentState,
+                                                MonitoredFile.Status.SYNC_DELETED,
+                                                changedFile.getStatus()
+                                        );
                                     }
                                     pathCurrentStateMap.put(changedFile.getPath(), MonitoredFile.Status.SYNC_DELETED);
                                     break;
@@ -146,26 +186,50 @@ class FileStatusManager implements Runnable {
                                     // file has been read and not modified since reading started
                                     pathCurrentStateMap.put(changedFile.getPath(), MonitoredFile.Status.MODIFIED_SYNCHRONIZED);
                                     if(LOGGER.isTraceEnabled()) {
-                                        LOGGER.trace("Path <[" + changedFile.getPath() + "]> state changed from <" + currentState + "> to <" + MonitoredFile.Status.MODIFIED_SYNCHRONIZED + "> because <" + changedFile.getStatus() + ">");
+                                        LOGGER.trace(
+                                                "Path <[{}]> state changed from <{}> to <{}> because <{}>",
+                                                changedFile.getPath(),
+                                                currentState,
+                                                MonitoredFile.Status.MODIFIED_SYNCHRONIZED,
+                                                changedFile.getStatus()
+                                        );
                                     }
                                     break;
                                 case SYNC_RECREATED:
                                     if(LOGGER.isTraceEnabled()) {
-                                        LOGGER.trace("Path <[" + changedFile.getPath() + "]> state changed from <" + currentState + "> to <" + MonitoredFile.Status.MODIFIED_SYNCHRONIZING + "> because <" + changedFile.getStatus() + ">");
+                                        LOGGER.trace(
+                                                "Path <[{}]> state changed from <{}> to <{}> because <{}>",
+                                                changedFile.getPath(),
+                                                currentState,
+                                                MonitoredFile.Status.MODIFIED_SYNCHRONIZING,
+                                                changedFile.getStatus()
+                                        );
                                     }
                                     pathCurrentStateMap.put(changedFile.getPath(), MonitoredFile.Status.MODIFIED_SYNCHRONIZING);
                                     threadPoolExecutor.execute(new FileTask(transferQueue, new MonitoredFile(changedFile.getPath(), MonitoredFile.Status.SYNC_RECREATED), consumerSupplier.get()));
                                     break;
                                 case SYNC_MODIFIED:
                                     if(LOGGER.isTraceEnabled()) {
-                                        LOGGER.trace("Path <[" + changedFile.getPath() + "]> state changed from <" + currentState + "> to <" + MonitoredFile.Status.MODIFIED_SYNCHRONIZING + "> because <" + changedFile.getStatus() + ">");
+                                        LOGGER.trace(
+                                                "Path <[{}]> state changed from <{}> to <{}> because <{}>",
+                                                changedFile.getPath(),
+                                                currentState,
+                                                MonitoredFile.Status.MODIFIED_SYNCHRONIZING,
+                                                changedFile.getStatus()
+                                        );
                                     }
                                     pathCurrentStateMap.put(changedFile.getPath(), MonitoredFile.Status.MODIFIED_SYNCHRONIZING);
                                     threadPoolExecutor.execute(new FileTask(transferQueue, new MonitoredFile(changedFile.getPath(), MonitoredFile.Status.SYNC_MODIFIED), consumerSupplier.get()));
                                     break;
                                 case SYNC_DELETED:
                                     if(LOGGER.isTraceEnabled()) {
-                                        LOGGER.trace("Path <[" + changedFile.getPath() + "]> state changed from <" + currentState + "> to <" + MonitoredFile.Status.DELETE_SYNCHRONIZING + "> because <" + changedFile.getStatus() + ">");
+                                        LOGGER.trace(
+                                                "Path <[{}]> state changed from <{}> to <{}> because <{}>",
+                                                changedFile.getPath(),
+                                                currentState,
+                                                MonitoredFile.Status.DELETE_SYNCHRONIZING,
+                                                changedFile.getStatus()
+                                        );
                                     }
                                     pathCurrentStateMap.put(changedFile.getPath(), MonitoredFile.Status.DELETE_SYNCHRONIZING);
                                     threadPoolExecutor.execute(new FileTask(transferQueue, new MonitoredFile(changedFile.getPath(), MonitoredFile.Status.SYNC_DELETED), consumerSupplier.get()));
@@ -184,13 +248,24 @@ class FileStatusManager implements Runnable {
                                 case SYNC_DELETED:
                                 case DELETE_SYNCHRONIZING:
                                     if(LOGGER.isTraceEnabled()) {
-                                        LOGGER.trace("Path <[" + changedFile.getPath() + "]> state changed from <" + currentState + "> to <NONE> because <" + changedFile.getStatus() + ">");
+                                        LOGGER.trace(
+                                                "Path <[{}]> state changed from <{}> to <NONE> because <{}>",
+                                                changedFile.getPath(),
+                                                currentState,
+                                                changedFile.getStatus()
+                                        );
                                     }
                                     pathCurrentStateMap.remove(changedFile.getPath());
                                     break;
                                 case SYNC_RECREATED:
                                     if(LOGGER.isTraceEnabled()) {
-                                        LOGGER.trace("Path <[" + changedFile.getPath() + "]> state changed from <" + currentState + "> to <" + MonitoredFile.Status.SYNC_RECREATED + "> because <" + changedFile.getStatus() + ">");
+                                        LOGGER.trace(
+                                                "Path <[{}]> state changed from <{}> to <{}> because <{}>",
+                                                changedFile.getPath(),
+                                                currentState,
+                                                MonitoredFile.Status.SYNC_RECREATED,
+                                                changedFile.getStatus()
+                                        );
                                     }
                                     pathCurrentStateMap.put(changedFile.getPath(), MonitoredFile.Status.MODIFIED_SYNCHRONIZING);
                                     threadPoolExecutor.execute(new FileTask(transferQueue, new MonitoredFile(changedFile.getPath(), MonitoredFile.Status.SYNC_RECREATED), consumerSupplier.get()));

@@ -262,13 +262,16 @@ public class DirectoryEventWatcher {
                 if (path.toAbsolutePath().equals(initialDirectory) || recursive) {
                     if (!path.toFile().canRead()) {
                         // non-readables are skipped
-                        LOGGER.warn("Directory <[{}]> is not readable, skipping.", path.toAbsolutePath());
+                        if(LOGGER.isWarnEnabled()) {
+                            LOGGER.warn("Directory <[{}]> is not readable, skipping.", path.toAbsolutePath());
+                        }
                         return FileVisitResult.SKIP_SUBTREE;
                     }
                     register(path);
                 } else {
-                    LOGGER.trace("Path skipped <[{}]> due to non-recursive processing", path.toAbsolutePath());
-
+                    if(LOGGER.isTraceEnabled()) {
+                        LOGGER.trace("Path skipped <[{}]> due to non-recursive processing", path.toAbsolutePath());
+                    }
                 }
             } else if (path.toFile().isFile()) {
                 if (filePatternMatcher.reset(path.getFileName().toString()).matches()) {
@@ -308,16 +311,22 @@ public class DirectoryEventWatcher {
 
         @Override
         public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-            LOGGER.trace("preVisitDirectory <[{}]>", dir.toAbsolutePath());
+            if(LOGGER.isTraceEnabled()) {
+                LOGGER.trace("preVisitDirectory <[{}]>", dir.toAbsolutePath());
+            }
             if (dir.toAbsolutePath().equals(initialDirectory) || recursive) {
                 if (!dir.toFile().canRead()) {
                     // non-readables are skipped
-                    LOGGER.warn("Directory <[{}]> is not readable, skipping.", dir.toAbsolutePath());
+                    if(LOGGER.isWarnEnabled()) {
+                        LOGGER.warn("Directory <[{}]> is not readable, skipping.", dir.toAbsolutePath());
+                    }
                     return FileVisitResult.SKIP_SUBTREE;
                 }
                 register(dir.toAbsolutePath());
             } else {
-                LOGGER.trace("Directory skipped <[{}]> due to non-recursive processing", dir.toAbsolutePath());
+                if(LOGGER.isTraceEnabled()) {
+                    LOGGER.trace("Directory skipped <[{}]> due to non-recursive processing", dir.toAbsolutePath());
+                }
             }
             return FileVisitResult.CONTINUE;
         }
