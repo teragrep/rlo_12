@@ -294,7 +294,10 @@ public class DirectoryEventWatcher {
 
         @Override
         public FileVisitResult visitFileFailed(Path path, IOException exc) {
-            LOGGER.warn("visitFileFailed <[{}]> is not accessible, skipping due to:", path, exc);
+            if (LOGGER.isWarnEnabled()) {
+                LOGGER.warn("visitFileFailed <[{}]> is not accessible, skipping due to <{}>", path, exc.getMessage());
+            }
+
             return FileVisitResult.CONTINUE;
         }
 
@@ -302,7 +305,9 @@ public class DirectoryEventWatcher {
         public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
             LOGGER.trace("postVisitDirectory <[{}]>", dir);
             if (exc != null) {
-                LOGGER.warn("Directory <[{}]> caused:", dir, exc);
+                if (LOGGER.isWarnEnabled()) {
+                    LOGGER.warn("Directory <[{}]> caused <{}>", dir, exc.getMessage());
+                }
                 return FileVisitResult.SKIP_SUBTREE;
             } else {
                 return FileVisitResult.CONTINUE;
