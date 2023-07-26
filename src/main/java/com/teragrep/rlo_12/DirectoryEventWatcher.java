@@ -76,21 +76,7 @@ public class DirectoryEventWatcher {
                                  Pattern filePattern,
                                  Supplier<Consumer<MonitoredFile>> readConsumerSupplier
     ) throws IOException {
-        this.pollingInterval = Long.MAX_VALUE;
-        this.pollingIntervalTimeUnit = TimeUnit.DAYS;
-        this.initialDirectory = directory.toAbsolutePath();
-        this.filePatternMatcher = filePattern.matcher("");
-        this.recursive = recursive;
-
-        this.directoryWatcher = initialDirectory.getFileSystem().newWatchService();
-
-        FileStatusManager fileStatusManager = new FileStatusManager(transferQueue, readConsumerSupplier);
-
-        Thread fileStatusManagerThread = new Thread(fileStatusManager);
-        fileStatusManagerThread.start();
-
-        initialScan(initialDirectory);
-
+        this(directory, recursive, filePattern, readConsumerSupplier, Long.MAX_VALUE, TimeUnit.DAYS);
     }
 
     /**
@@ -111,6 +97,29 @@ public class DirectoryEventWatcher {
                                  long interval,
                                  TimeUnit intervalTimeUnit
     ) throws IOException {
+        this(directory, recursive, filePattern, readConsumerSupplier, Long.MAX_VALUE, TimeUnit.DAYS, 8);
+    }
+
+    /**
+     * FileEventWatcher
+     *
+     * @param directory                Directory to monitor for changes
+     * @param recursive                Recurse to sub-directories
+     * @param filePattern              Filename pattern to match for from (sub-)directories
+     * @param readConsumerSupplier     MonitoredFile Consumer Supplier which processes the events
+     * @param interval                 Polling interval
+     * @param intervalTimeUnit         Polling interval TimeUnit
+     * @param maximumPoolSize          Maximum thread count
+     * @throws IOException Path.register throws IOException on initial directory
+     */
+    public DirectoryEventWatcher(Path directory,
+                                 boolean recursive,
+                                 Pattern filePattern,
+                                 Supplier<Consumer<MonitoredFile>> readConsumerSupplier,
+                                 long interval,
+                                 TimeUnit intervalTimeUnit,
+                                 int maximumPoolSize
+    ) throws IOException {
         this.pollingInterval = interval;
         this.pollingIntervalTimeUnit = intervalTimeUnit;
         this.initialDirectory = directory.toAbsolutePath();
@@ -119,7 +128,7 @@ public class DirectoryEventWatcher {
 
         this.directoryWatcher = initialDirectory.getFileSystem().newWatchService();
 
-        FileStatusManager fileStatusManager = new FileStatusManager(transferQueue, readConsumerSupplier);
+        FileStatusManager fileStatusManager = new FileStatusManager(transferQueue, readConsumerSupplier, maximumPoolSize);
 
         Thread fileStatusManagerThread = new Thread(fileStatusManager);
         fileStatusManagerThread.start();
