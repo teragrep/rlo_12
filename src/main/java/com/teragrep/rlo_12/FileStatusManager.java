@@ -44,9 +44,12 @@ class FileStatusManager implements Runnable {
     private final Supplier<Consumer<MonitoredFile>> consumerSupplier;
 
     FileStatusManager(TransferQueue<MonitoredFile> transferQueue, Supplier<Consumer<MonitoredFile>> consumerSupplier) {
+        this(transferQueue, consumerSupplier, 8);
+    }
+    FileStatusManager(TransferQueue<MonitoredFile> transferQueue, Supplier<Consumer<MonitoredFile>> consumerSupplier, int maximumPoolSize) {
         this.transferQueue = transferQueue;
         this.consumerSupplier = consumerSupplier;
-        this.threadPoolExecutor = new ThreadPoolExecutor(1, 8, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
+        this.threadPoolExecutor = new ThreadPoolExecutor(1, maximumPoolSize, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
     }
 
     @Override
