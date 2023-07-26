@@ -97,7 +97,7 @@ public class DirectoryEventWatcher {
                                  long interval,
                                  TimeUnit intervalTimeUnit
     ) throws IOException {
-        this(directory, recursive, filePattern, readConsumerSupplier, Long.MAX_VALUE, TimeUnit.DAYS, 8);
+        this(directory, recursive, filePattern, readConsumerSupplier, interval, intervalTimeUnit, 8);
     }
 
     /**
