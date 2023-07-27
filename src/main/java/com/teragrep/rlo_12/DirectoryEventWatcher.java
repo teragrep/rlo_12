@@ -25,6 +25,7 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
@@ -61,6 +62,8 @@ public class DirectoryEventWatcher {
 
     private final long pollingInterval;
     private final TimeUnit pollingIntervalTimeUnit;
+    private AtomicBoolean isRunning = new AtomicBoolean(true);
+    private FileStatusManager fileStatusManager;
 
     /**
      * FileEventWatcher
@@ -128,7 +131,7 @@ public class DirectoryEventWatcher {
 
         this.directoryWatcher = initialDirectory.getFileSystem().newWatchService();
 
-        FileStatusManager fileStatusManager = new FileStatusManager(transferQueue, readConsumerSupplier, maximumPoolSize);
+        fileStatusManager = new FileStatusManager(transferQueue, readConsumerSupplier, maximumPoolSize);
 
         Thread fileStatusManagerThread = new Thread(fileStatusManager);
         fileStatusManagerThread.start();
@@ -161,7 +164,7 @@ public class DirectoryEventWatcher {
      * @throws InterruptedException Directory polling was interrupted
      */
     public void watch() throws IOException, InterruptedException {
-        while (true) {
+        while (isRunning.get()) {
 
             // wait for key to be signaled
             WatchKey key;
@@ -378,5 +381,10 @@ public class DirectoryEventWatcher {
             );
 
         }
+    }
+
+    public void stop() {
+        isRunning.set(false);
+        fileStatusManager.stop();
     }
 }
