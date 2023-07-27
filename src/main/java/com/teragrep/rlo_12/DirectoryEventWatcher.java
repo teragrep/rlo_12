@@ -25,6 +25,7 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
@@ -41,7 +42,7 @@ import static java.nio.file.StandardWatchEventKinds.*;
  * -&gt; /path/to/dir/foo/fii/faa subscribe as well (any dir under /path/to/dir
  * -&gt; match any file under /path/to/dir or it's sub-directories for pattern
  */
-public class DirectoryEventWatcher {
+public class DirectoryEventWatcher implements Runnable {
     private static final Logger LOGGER = LoggerFactory.getLogger(DirectoryEventWatcher.class);
 
     private final Path initialDirectory;
@@ -61,6 +62,10 @@ public class DirectoryEventWatcher {
 
     private final long pollingInterval;
     private final TimeUnit pollingIntervalTimeUnit;
+    private final Thread thread;
+    private final FileStatusManager fileStatusManager;
+    private final Thread fileStatusManagerThread;
+    private AtomicBoolean isRunning = new AtomicBoolean(true);
 
     /**
      * FileEventWatcher
@@ -128,12 +133,17 @@ public class DirectoryEventWatcher {
 
         this.directoryWatcher = initialDirectory.getFileSystem().newWatchService();
 
-        FileStatusManager fileStatusManager = new FileStatusManager(transferQueue, readConsumerSupplier, maximumPoolSize);
+        fileStatusManager = new FileStatusManager(transferQueue, readConsumerSupplier, maximumPoolSize);
 
-        Thread fileStatusManagerThread = new Thread(fileStatusManager);
+        fileStatusManagerThread = new Thread(fileStatusManager);
+
+        thread = new Thread(this);
+        thread.setName("DEW");
+    }
+
+    public void start() {
         fileStatusManagerThread.start();
-
-        initialScan(initialDirectory);
+        thread.start();
     }
 
     /**
@@ -161,7 +171,7 @@ public class DirectoryEventWatcher {
      * @throws InterruptedException Directory polling was interrupted
      */
     public void watch() throws IOException, InterruptedException {
-        while (true) {
+        while (isRunning.get()) {
 
             // wait for key to be signaled
             WatchKey key;
@@ -257,6 +267,23 @@ public class DirectoryEventWatcher {
                 watchKeyPathMap.remove(key);
             }
         }
+    }
+
+    @Override
+    public void run() {
+        try {
+            initialScan(initialDirectory);
+            watch();
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void stop() throws InterruptedException {
+        isRunning.set(false);
+        thread.join();
+        fileStatusManager.stop();
+        fileStatusManagerThread.join();
     }
 
     private class ScavengingFileVisitor implements FileVisitor<Path> {
