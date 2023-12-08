@@ -7,7 +7,7 @@
   <groupId>com.teragrep</groupId>
   <artifactId>rlo_12</artifactId>
   <version>${revision}${sha1}${changelist}</version>
-  <description>Java Record File Event Notifier</description>
+  <description>Recursive File Event Monitor for Java</description>
   <name>rlo_12</name>
   <url>https://teragrep.com</url>
   <properties>
